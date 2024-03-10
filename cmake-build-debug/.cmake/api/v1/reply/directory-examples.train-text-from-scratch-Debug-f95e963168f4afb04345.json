@@ -1,0 +1,45 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"examples/train-text-from-scratch/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 3,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "bin",
+			"paths" : 
+			[
+				"bin/train-text-from-scratch.exe"
+			],
+			"targetId" : "train-text-from-scratch::@91097e68f7f4cc88269e",
+			"targetIndex" : 51,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "examples/train-text-from-scratch",
+		"source" : "examples/train-text-from-scratch"
+	}
+}

@@ -55,11 +55,16 @@ void sigint_handler(int signo) {
 #endif
 
 int main(int argc, char ** argv) {
+    printf("---------------------------start of main.cpp------------------------------\n");
+
+    // params
     gpt_params params;
 
     if (gpt_params_parse(argc, argv, params) == false) {
         return 1;
     }
+
+    return 0;
 
     // save choice to use color for later
     // (note for later: this is a slightly awkward choice)

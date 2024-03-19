@@ -91,18 +91,40 @@ void process_escapes(std::string& input) {
     input.resize(output_idx);
 }
 
+// parse command line arguments.
+/**
+ * @param argc an integer representing the number of command-line arguments.
+ * @param argv an array of character pointers representing the command-line arguments.
+ * @param params a reference to an object of type gpt_params where the parsed parameters will be stored.
+ * */
 bool gpt_params_parse(int argc, char ** argv, gpt_params & params) {
+    printf("argc: %d\n", argc); // argc is 19.
+    /**
+     * Here is why argc is 19.
+     * In the chat.sh, it is written in ./main -m(param 1), [model_path](param 2), -c(param 3), 512(param 4), ... , [file_path](param 18)
+     * */
+
+    // A boolean flag initialized to false, likely to be used to mark whether any invalid parameters were encountered during parsing.
     bool invalid_param = false;
+    // Another boolean flag initialized to false, probably indicating whether a prompt should be escaped.
     bool escape_prompt = false;
+    // A string variable to hold each command-line argument during iteration.
     std::string arg;
+    // An object of type gpt_params initialized to its default values. This could be used as a template for parsing arguments.
     gpt_params default_params;
+    // A string constant representing the prefix used for command-line arguments, set to "--".
     const std::string arg_prefix = "--";
 
+    // The loop iterates over each command-line argument starting from index 1 (since index 0 typically contains the program name).
+    // i in range [1, 18], argc is 19.
     for (int i = 1; i < argc; i++) {
         arg = argv[i];
+        // check if arg has prefix "--", if it does, replace '_' to '-'.
         if (arg.compare(0, arg_prefix.size(), arg_prefix) == 0) {
             std::replace(arg.begin(), arg.end(), '_', '-');
         }
+
+        printf("argv: %d, %s\n", i, arg.c_str());
 
         if (arg == "-s" || arg == "--seed") {
             if (++i >= argc) {
@@ -158,6 +180,7 @@ bool gpt_params_parse(int argc, char ** argv, gpt_params & params) {
                 break;
             }
             params.n_predict = std::stoi(argv[i]);
+            printf("n_predict: %s\n", argv[i]);
         } else if (arg == "--top-k") {
             if (++i >= argc) {
                 invalid_param = true;
@@ -170,6 +193,7 @@ bool gpt_params_parse(int argc, char ** argv, gpt_params & params) {
                 break;
             }
             params.n_ctx = std::stoi(argv[i]);
+            printf("n_ctx: %s\n", argv[i]);
         } else if (arg == "-gqa" || arg == "--gqa") {
             if (++i >= argc) {
                 invalid_param = true;
@@ -281,6 +305,7 @@ bool gpt_params_parse(int argc, char ** argv, gpt_params & params) {
             }
             params.n_batch = std::stoi(argv[i]);
             params.n_batch = std::min(512, params.n_batch);
+            printf("n_batch: %s\n", argv[i]);
         } else if (arg == "--keep") {
             if (++i >= argc) {
                 invalid_param = true;
@@ -299,6 +324,7 @@ bool gpt_params_parse(int argc, char ** argv, gpt_params & params) {
                 break;
             }
             params.model = argv[i];
+            printf("model: %s\n", argv[i]);
         } else if (arg == "-a" || arg == "--alias") {
             if (++i >= argc) {
                 invalid_param = true;

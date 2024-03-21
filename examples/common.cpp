@@ -690,6 +690,8 @@ struct llama_context_params llama_context_params_from_gpt_params(const gpt_param
     lparams.embedding       = params.embedding;
 
     // Unchanged
+    /* progress_callback */
+    /* progress_callback_user_data */
     /* vocab_only */
 
     return lparams;

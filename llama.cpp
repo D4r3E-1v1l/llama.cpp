@@ -332,6 +332,8 @@ struct llama_model {
 };
 
 struct llama_context {
+    // Constructor
+    // This constructor initializes various member variables of the llama_context struct, including model, t_load_us, and t_start_us, using the provided llama_model object.
     llama_context(const llama_model & model) : model(model), t_load_us(model.t_load_us), t_start_us(model.t_start_us) {}
     ~llama_context() {
         if (model_owner) {
@@ -3216,23 +3218,36 @@ void llama_free_model(struct llama_model * model) {
     delete model;
 }
 
+// Initializes various elements within the context (ctx) such as a key-value cache, reserves space for logits and embeddings based on parameters, and prints memory size information.
 struct llama_context * llama_new_context_with_model(
-                 struct llama_model * model,
-        struct llama_context_params   params) {
-
+    struct llama_model * model,
+    struct llama_context_params params
+) {
+    // check model == NULL or model = nullptr
     if (!model) {
         return nullptr;
     }
 
+    // create context for model.
     llama_context * ctx = new llama_context(*model);
 
+    // If params.seed is default value, then update it to current timestamp.
+    // params.seed should not == its default value now.
     if (params.seed == LLAMA_DEFAULT_SEED) {
         params.seed = time(NULL);
     }
 
     unsigned cur_percentage = 0;
+    // params.progress_callback is NULL
     if (params.progress_callback == NULL) {
+        // params.progress_callback_user_data = 0
         params.progress_callback_user_data = &cur_percentage;
+        // The progress_callback is a callback function that is called during some long-running process to provide feedback on the progress of that process.
+        // 具体体现形式: 完成度每增长一点在后面加一个(.), 整个过程结束家换行符(\n)
+        // e.g. [.................               ]  任务还未完成
+        //                                              |
+        //                                              v
+        //      [................................]  任务完成
         params.progress_callback = [](float progress, void * ctx) {
             unsigned * cur_percentage_p = (unsigned *) ctx;
             unsigned percentage = (unsigned) (100 * progress);
@@ -3247,24 +3262,39 @@ struct llama_context * llama_new_context_with_model(
         };
     }
 
+    // sets up a random number generator for the context.
     ctx->rng = std::mt19937(params.seed);
+    // This line assigns the value of params.logits_all to ctx->logits_all, effectively transferring the setting from the params object to the context.
     ctx->logits_all = params.logits_all;
 
+    // by default using f16 accuracy.
     ggml_type memory_type = params.f16_kv ? GGML_TYPE_F16 : GGML_TYPE_F32;
 
     // reserve memory for context buffers
+    // params.vocab_only is false.
     if (!params.vocab_only) {
+        // Initializing Self-Attention Cache
         if (!kv_cache_init(ctx->model.hparams, ctx->kv_self, memory_type, ctx->model.hparams.n_ctx, params.n_gpu_layers)) {
             fprintf(stderr, "%s: kv_cache_init() failed for self-attention cache\n", __func__);
             llama_free(ctx);
             return nullptr;
         }
 
+        // Printing Memory Size:
         {
             const size_t memory_size = ggml_nbytes(ctx->kv_self.k) + ggml_nbytes(ctx->kv_self.v);
             fprintf(stderr, "%s: kv self size  = %7.2f MB\n", __func__, memory_size / 1024.0 / 1024.0);
         }
 
+        // hparams里面有
+        //    uint32_t n_vocab = 32000;
+        //    uint32_t n_ctx   = 512;   // this is provided as user input?
+        //    uint32_t n_embd  = 4096;
+        //    uint32_t n_mult  = 4;
+        //    uint32_t n_head  = 32;
+        //    uint32_t n_layer = 32;
+        //    uint32_t n_rot   = 64;
+        // 官方也不确定user是不是可以改
         const auto & hparams = ctx->model.hparams;
 
         // resized during inference

@@ -128,6 +128,7 @@ int main(int argc, char ** argv) {
     }
 
     // params.numa is for some NUMA system(high-end servers and workstation-class systems), should be irrelevant.
+    // 里面我没细研究
     llama_backend_init(params.numa);
 
     // declare pointers.
@@ -141,17 +142,20 @@ int main(int argc, char ** argv) {
     // load the model and apply lora adapter, if any
     std::tie(model, ctx) = llama_init_from_gpt_params(params);
 
-    return 0;
-
+    // params.cfg_scale by default 1.f.
     if (params.cfg_scale > 1.f) {
         struct llama_context_params lparams = llama_context_params_from_gpt_params(params);
+        // ctx_guidance never be read.
         ctx_guidance = llama_new_context_with_model(model, lparams);
     }
 
+    // Model initialization failed.
     if (model == NULL) {
         fprintf(stderr, "%s: error: unable to load model\n", __func__);
         return 1;
     }
+
+    return 0;
 
     // print system information
     {

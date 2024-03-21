@@ -513,11 +513,13 @@ bool gpt_params_parse(int argc, char ** argv, gpt_params & params) {
             exit(1);
         }
     }
+
     if (invalid_param) {
         fprintf(stderr, "error: invalid parameter for argument: %s\n", arg.c_str());
         gpt_print_usage(argc, argv, default_params);
         exit(1);
     }
+
     if (params.prompt_cache_all &&
             (params.interactive || params.interactive_first ||
              params.instruct)) {
@@ -535,6 +537,7 @@ bool gpt_params_parse(int argc, char ** argv, gpt_params & params) {
     return true;
 }
 
+// Explanation of args
 void gpt_print_usage(int /*argc*/, char ** argv, const gpt_params & params) {
     fprintf(stdout, "usage: %s [options]\n", argv[0]);
     fprintf(stdout, "\n");
@@ -664,8 +667,11 @@ std::vector<llama_token> llama_tokenize(struct llama_context * ctx, const std::s
 }
 
 struct llama_context_params llama_context_params_from_gpt_params(const gpt_params & params) {
+    // Load default value of llama context.
     auto lparams = llama_context_default_params();
 
+    // Changed
+    lparams.seed            = params.seed;
     lparams.n_ctx           = params.n_ctx;
     lparams.n_batch         = params.n_batch;
     lparams.n_gqa           = params.n_gqa;
@@ -673,36 +679,54 @@ struct llama_context_params llama_context_params_from_gpt_params(const gpt_param
     lparams.n_gpu_layers    = params.n_gpu_layers;
     lparams.main_gpu        = params.main_gpu;
     lparams.tensor_split    = params.tensor_split;
-    lparams.low_vram        = params.low_vram;
-    lparams.mul_mat_q       = params.mul_mat_q;
-    lparams.seed            = params.seed;
-    lparams.f16_kv          = params.memory_f16;
-    lparams.use_mmap        = params.use_mmap;
-    lparams.use_mlock       = params.use_mlock;
-    lparams.logits_all      = params.perplexity;
-    lparams.embedding       = params.embedding;
     lparams.rope_freq_base  = params.rope_freq_base;
     lparams.rope_freq_scale = params.rope_freq_scale;
+    lparams.low_vram        = params.low_vram;
+    lparams.mul_mat_q       = params.mul_mat_q;
+    lparams.f16_kv          = params.memory_f16;
+    lparams.logits_all      = params.perplexity;
+    lparams.use_mmap        = params.use_mmap;
+    lparams.use_mlock       = params.use_mlock;
+    lparams.embedding       = params.embedding;
+
+    // Unchanged
+    /* vocab_only */
 
     return lparams;
 }
 
+/**
+ * @param params parameters
+ * @return a tuple type value
+ * */
 std::tuple<struct llama_model *, struct llama_context *> llama_init_from_gpt_params(const gpt_params & params) {
+    // The auto keyword in C, when used as a storage class specifier, indicates that the storage
+    // duration and scope of a variable are automatic. Variables declared with auto storage class
+    // are automatically allocated when a block containing their declaration is entered and
+    // deallocated when the block is exited. This is the default behavior for local variables in C,
+    // so the use of auto is optional and redundant in most cases.
+
     auto lparams = llama_context_params_from_gpt_params(params);
 
+    // load model from path and load its params.
     llama_model * model  = llama_load_model_from_file(params.model.c_str(), lparams);
+    // mode not found check.
     if (model == NULL) {
         fprintf(stderr, "%s: error: failed to load model '%s'\n", __func__, params.model.c_str());
+        // creates a tuple containing two elements, both of which are nullptr.
         return std::make_tuple(nullptr, nullptr);
     }
 
+    // Why we need to create a context for model?
     llama_context * lctx = llama_new_context_with_model(model, lparams);
     if (lctx == NULL) {
         fprintf(stderr, "%s: error: failed to create context with model '%s'\n", __func__, params.model.c_str());
         llama_free_model(model);
+        // creates a tuple containing two elements, both of which are nullptr.
         return std::make_tuple(nullptr, nullptr);
     }
 
+    // load lora adapter.
     if (!params.lora_adapter.empty()) {
         int err = llama_model_apply_lora_from_file(model,
                                              params.lora_adapter.c_str(),

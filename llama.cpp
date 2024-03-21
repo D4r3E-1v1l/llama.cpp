@@ -886,6 +886,9 @@ static bool kv_cache_init(
     return true;
 }
 
+/**
+ * @return the default value of llama context
+ * */
 struct llama_context_params llama_context_default_params() {
     struct llama_context_params result = {
         /*.seed                        =*/ LLAMA_DEFAULT_SEED,

@@ -64,13 +64,12 @@ int main(int argc, char ** argv) {
         return 1;
     }
 
-    return 0;
-
     // save choice to use color for later
     // (note for later: this is a slightly awkward choice)
     console::init(params.simple_io, params.use_color);
     atexit([]() { console::cleanup(); });
 
+    // perplexity unsupported
     if (params.perplexity) {
         printf("\n************\n");
         printf("%s: please use the 'perplexity' tool for perplexity calculations\n", __func__);
@@ -79,6 +78,7 @@ int main(int argc, char ** argv) {
         return 0;
     }
 
+    // embedding unsupported
     if (params.embedding) {
         printf("\n************\n");
         printf("%s: please use the 'embedding' tool for embedding calculations\n", __func__);
@@ -87,14 +87,17 @@ int main(int argc, char ** argv) {
         return 0;
     }
 
+    // Warning
     if (params.rope_freq_base != 10000.0) {
         fprintf(stderr, "%s: warning: changing RoPE frequency base to %g (default 10000.0)\n", __func__, params.rope_freq_base);
     }
 
+    // Warning
     if (params.rope_freq_scale != 1.0) {
         fprintf(stderr, "%s: warning: scaling RoPE frequency by %g (default 1.0)\n", __func__, params.rope_freq_scale);
     }
 
+    // Warning
     if (params.n_ctx > 2048) {
         // TODO: determine the actual max context of the model (e.g. 4096 for LLaMA v2) and use that instead of 2048
         fprintf(stderr, "%s: warning: base model only supports context sizes no greater than 2048 tokens (%d specified)\n", __func__, params.n_ctx);
@@ -103,28 +106,43 @@ int main(int argc, char ** argv) {
         params.n_ctx = 8;
     }
 
+    // show build status.
     fprintf(stderr, "%s: build = %d (%s)\n", __func__, BUILD_NUMBER, BUILD_COMMIT);
 
+    // LLAMA_DEFAULT_SEED is 0xFFFFFFFF, params.seed is -1(uint32_t type).
+    // uint32_t can't have negative value -1 => uint32_t convert -1 to 2^32 - 1 => 0xFFFFFFFF(2^32 - 1) == (uint32_t)(-1)
     if (params.seed == LLAMA_DEFAULT_SEED) {
+        // use timestamp as seed.
         params.seed = time(NULL);
     }
 
     fprintf(stderr, "%s: seed  = %u\n", __func__, params.seed);
 
+    // It defines a function to generate random number using params in some way. it does not change the value of params.seed.
     std::mt19937 rng(params.seed);
+
+    // random prompt is false by default.
     if (params.random_prompt) {
+        // use rng to generate a random number.
         params.prompt = gpt_random_prompt(rng);
     }
 
+    // params.numa is for some NUMA system(high-end servers and workstation-class systems), should be irrelevant.
     llama_backend_init(params.numa);
 
+    // declare pointers.
     llama_model * model;
     llama_context * ctx;
+    // ctx_guidance ?
     llama_context * ctx_guidance = NULL;
+    // Assumption: ctx represents the context only in main(local context), g_ctx represents global context(global context).
     g_ctx = &ctx;
 
     // load the model and apply lora adapter, if any
     std::tie(model, ctx) = llama_init_from_gpt_params(params);
+
+    return 0;
+
     if (params.cfg_scale > 1.f) {
         struct llama_context_params lparams = llama_context_params_from_gpt_params(params);
         ctx_guidance = llama_new_context_with_model(model, lparams);

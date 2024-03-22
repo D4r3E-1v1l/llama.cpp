@@ -4,8 +4,8 @@
 
 
 # Configuration directories and files
-SourceDirectory: D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp
-BuildDirectory: D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/cmake-build-debug
+SourceDirectory: /home/shiyu/llama.cpp
+BuildDirectory: /home/shiyu/llama.cpp/cmake-build-debug
 
 # Where to place the cost data store
 CostDataFile: 
@@ -14,7 +14,7 @@ CostDataFile:
 Site: ADM1N
 
 # Build name is osname-revision-compiler, i.e. Linux-2.4.2-2smp-c++
-BuildName: Win32-ninja
+BuildName: Linux-c++
 
 # Subprojects
 LabelsForSubprojects: 
@@ -27,8 +27,8 @@ SubmitInactivityTimeout:
 NightlyStartTime: 00:00:00 EDT
 
 # Commands for the build/test/submit cycle
-ConfigureCommand: "C:/Program Files/JetBrains/CLion 2023.3.4/bin/cmake/win/x64/bin/cmake.exe" "D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp"
-MakeCommand: "C:\Program Files\JetBrains\CLion 2023.3.4\bin\cmake\win\x64\bin\cmake.exe" --build . --config "${CTEST_CONFIGURATION_TYPE}"
+ConfigureCommand: "/home/shiyu/.cache/JetBrains/RemoteDev/dist/b1b1b7f34774a_CLion-241.14494.154/bin/cmake/linux/x64/bin/cmake" "/home/shiyu/llama.cpp"
+MakeCommand: /home/shiyu/.cache/JetBrains/RemoteDev/dist/b1b1b7f34774a_CLion-241.14494.154/bin/cmake/linux/x64/bin/cmake --build . --config "${CTEST_CONFIGURATION_TYPE}"
 DefaultCTestConfigurationType: Release
 
 # version control
@@ -45,7 +45,7 @@ SVNOptions:
 SVNUpdateOptions: 
 
 # Git options
-GITCommand: C:/Program Files/Git/cmd/git.exe
+GITCommand: /usr/bin/git
 GITInitSubmodules: 
 GITUpdateOptions: 
 GITUpdateCustom: 
@@ -58,13 +58,13 @@ P4UpdateOptions:
 P4UpdateCustom: 
 
 # Generic update command
-UpdateCommand: C:/Program Files/Git/cmd/git.exe
+UpdateCommand: /usr/bin/git
 UpdateOptions: 
 UpdateType: git
 
 # Compiler info
-Compiler: C:/Program Files/JetBrains/CLion 2023.3.4/bin/mingw/bin/g++.exe
-CompilerVersion: 13.1.0
+Compiler: /usr/bin/c++
+CompilerVersion: 9.4.0
 
 # Dynamic analysis (MemCheck)
 PurifyCommand: 
@@ -81,7 +81,7 @@ MemoryCheckCommandOptions:
 MemoryCheckSuppressionFile: 
 
 # Coverage
-CoverageCommand: C:/Program Files/JetBrains/CLion 2023.3.4/bin/mingw/bin/gcov.exe
+CoverageCommand: /usr/bin/gcov
 CoverageExtraFlags: -l
 
 # Testing options

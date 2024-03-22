@@ -1,8 +1,8 @@
-# Install script for directory: D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/examples
+# Install script for directory: /home/shiyu/llama.cpp/examples
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/llama.cpp")
+  set(CMAKE_INSTALL_PREFIX "/usr/local")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -27,6 +27,11 @@ if(NOT CMAKE_INSTALL_COMPONENT)
   endif()
 endif()
 
+# Install shared libraries without execute permission?
+if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
+  set(CMAKE_INSTALL_SO_NO_EXE "1")
+endif()
+
 # Is this installation the result of a crosscompile?
 if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
@@ -34,23 +39,23 @@ endif()
 
 # Set default install directory permissions.
 if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "C:/Program Files/JetBrains/CLion 2023.3.4/bin/mingw/bin/objdump.exe")
+  set(CMAKE_OBJDUMP "/usr/bin/objdump")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/cmake-build-debug/examples/main/cmake_install.cmake")
-  include("D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/cmake-build-debug/examples/quantize/cmake_install.cmake")
-  include("D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/cmake-build-debug/examples/quantize-stats/cmake_install.cmake")
-  include("D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/cmake-build-debug/examples/perplexity/cmake_install.cmake")
-  include("D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/cmake-build-debug/examples/embedding/cmake_install.cmake")
-  include("D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/cmake-build-debug/examples/save-load-state/cmake_install.cmake")
-  include("D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/cmake-build-debug/examples/benchmark/cmake_install.cmake")
-  include("D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/cmake-build-debug/examples/baby-llama/cmake_install.cmake")
-  include("D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/cmake-build-debug/examples/train-text-from-scratch/cmake_install.cmake")
-  include("D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/cmake-build-debug/examples/simple/cmake_install.cmake")
-  include("D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/cmake-build-debug/examples/embd-input/cmake_install.cmake")
-  include("D:/Dev/projects/AndroidStudioProjects/DeepLearningProject/llama.cpp/cmake-build-debug/examples/server/cmake_install.cmake")
+  include("/home/shiyu/llama.cpp/cmake-build-debug/examples/main/cmake_install.cmake")
+  include("/home/shiyu/llama.cpp/cmake-build-debug/examples/quantize/cmake_install.cmake")
+  include("/home/shiyu/llama.cpp/cmake-build-debug/examples/quantize-stats/cmake_install.cmake")
+  include("/home/shiyu/llama.cpp/cmake-build-debug/examples/perplexity/cmake_install.cmake")
+  include("/home/shiyu/llama.cpp/cmake-build-debug/examples/embedding/cmake_install.cmake")
+  include("/home/shiyu/llama.cpp/cmake-build-debug/examples/save-load-state/cmake_install.cmake")
+  include("/home/shiyu/llama.cpp/cmake-build-debug/examples/benchmark/cmake_install.cmake")
+  include("/home/shiyu/llama.cpp/cmake-build-debug/examples/baby-llama/cmake_install.cmake")
+  include("/home/shiyu/llama.cpp/cmake-build-debug/examples/train-text-from-scratch/cmake_install.cmake")
+  include("/home/shiyu/llama.cpp/cmake-build-debug/examples/simple/cmake_install.cmake")
+  include("/home/shiyu/llama.cpp/cmake-build-debug/examples/embd-input/cmake_install.cmake")
+  include("/home/shiyu/llama.cpp/cmake-build-debug/examples/server/cmake_install.cmake")
 
 endif()
 

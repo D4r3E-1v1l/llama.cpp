@@ -155,8 +155,6 @@ int main(int argc, char ** argv) {
         return 1;
     }
 
-    return 0;
-
     // print system information
     {
         fprintf(stderr, "\n");
@@ -190,9 +188,12 @@ int main(int argc, char ** argv) {
         return 0;
     }
 
-    std::string path_session = params.path_prompt_cache;
+    std::string path_session = params.path_prompt_cache; // cache is empty.
     std::vector<llama_token> session_tokens;
 
+    printf("path_session: %d\n", path_session.empty());
+
+    // path_session is empty, !path_session.empty() is false.
     if (!path_session.empty()) {
         fprintf(stderr, "%s: attempting to load saved session from '%s'\n", __func__, path_session.c_str());
 
@@ -216,7 +217,10 @@ int main(int argc, char ** argv) {
         }
     }
 
+    return 0;
+
     // tokenize the prompt
+    // embedded input
     std::vector<llama_token> embd_inp;
 
     // Add a space in front of the first character to match OG llama tokenizer behavior

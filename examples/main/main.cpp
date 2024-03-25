@@ -217,18 +217,21 @@ int main(int argc, char ** argv) {
         }
     }
 
-    return 0;
-
     // tokenize the prompt
     // embedded input
+    // a list of llama token. type llama_token is the same as the int.
     std::vector<llama_token> embd_inp;
 
+    // history conversation is saved in params.prompt.
     // Add a space in front of the first character to match OG llama tokenizer behavior
+    // insert(position to insert, number of characters to insert, character)
     params.prompt.insert(0, 1, ' ');
 
+    // encode the content from prompt.
     if (params.interactive_first || params.instruct || !params.prompt.empty() || session_tokens.empty()) {
         embd_inp = ::llama_tokenize(ctx, params.prompt, true);
     } else {
+        // session token is previously tokenized the input. (不确定)
         embd_inp = session_tokens;
     }
 
@@ -236,6 +239,8 @@ int main(int argc, char ** argv) {
     std::vector<llama_token> guidance_inp;
     int guidance_offset = 0;
     int original_prompt_len = 0;
+
+    // currently ctx_guidance is NULL.
     if (ctx_guidance) {
         params.cfg_negative_prompt.insert(0, 1, ' ');
         guidance_inp = ::llama_tokenize(ctx_guidance, params.cfg_negative_prompt, true);
@@ -251,6 +256,8 @@ int main(int argc, char ** argv) {
         fprintf(stderr, "%s: error: prompt is too long (%d tokens, max %d)\n", __func__, (int) embd_inp.size(), n_ctx - 4);
         return 1;
     }
+
+    return 0;
 
     // debug message about similarity of saved session, if applicable
     size_t n_matching_session_tokens = 0;

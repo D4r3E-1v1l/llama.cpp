@@ -250,6 +250,7 @@ int main(int argc, char ** argv) {
         guidance_offset = (int)guidance_inp.size() - original_prompt_len;
     }
 
+    // Why we have to call llama_n_ctx
     const int n_ctx = llama_n_ctx(ctx);
 
     if ((int) embd_inp.size() > n_ctx - 4) {
@@ -257,22 +258,32 @@ int main(int argc, char ** argv) {
         return 1;
     }
 
-    return 0;
-
     // debug message about similarity of saved session, if applicable
+    // size_t is unsigned long.
     size_t n_matching_session_tokens = 0;
+
+    // false in if
     if (session_tokens.size()) {
+        // calculate how many tokens in the input prompt match the session file.
         for (llama_token id : session_tokens) {
+            // 1. matching tokens is already equal to or greater than the input prompt size.
+            // 2. the current session token doesn't match the corresponding token in the input prompt.
             if (n_matching_session_tokens >= embd_inp.size() || id != embd_inp[n_matching_session_tokens]) {
                 break;
             }
             n_matching_session_tokens++;
         }
+
+        // prompt is empty.
         if (params.prompt.empty() && n_matching_session_tokens == embd_inp.size()) {
             fprintf(stderr, "%s: using full prompt from session file\n", __func__);
-        } else if (n_matching_session_tokens >= embd_inp.size()) {
+        }
+        // the session tokens and prompt is an exact match.
+        else if (n_matching_session_tokens >= embd_inp.size()) {
             fprintf(stderr, "%s: session file has exact match for prompt!\n", __func__);
-        } else if (n_matching_session_tokens < (embd_inp.size() / 2)) {
+        }
+        // similarity of the session tokens and prompt is low.
+        else if (n_matching_session_tokens < (embd_inp.size() / 2)) {
             fprintf(stderr, "%s: warning: session file has low similarity to prompt (%zu / %zu tokens); will mostly be reevaluated\n",
                 __func__, n_matching_session_tokens, embd_inp.size());
         } else {
@@ -287,6 +298,8 @@ int main(int argc, char ** argv) {
             session_tokens.size() > embd_inp.size()) {
         session_tokens.resize(embd_inp.size() - 1);
     }
+
+    return 0;
 
     // number of tokens to keep when resetting context
     if (params.n_keep < 0 || params.n_keep > (int) embd_inp.size() || params.instruct) {

@@ -251,6 +251,7 @@ int main(int argc, char ** argv) {
     }
 
     // Why we have to call llama_n_ctx
+    // retrieve the model.hparams.n_embd within ctx.
     const int n_ctx = llama_n_ctx(ctx);
 
     if ((int) embd_inp.size() > n_ctx - 4) {

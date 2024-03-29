@@ -300,9 +300,8 @@ int main(int argc, char ** argv) {
         session_tokens.resize(embd_inp.size() - 1);
     }
 
-    return 0;
-
     // number of tokens to keep when resetting context
+    // reset n_keep value.
     if (params.n_keep < 0 || params.n_keep > (int) embd_inp.size() || params.instruct) {
         params.n_keep = (int)embd_inp.size();
     }
@@ -323,16 +322,22 @@ int main(int argc, char ** argv) {
     }
 
     // determine newline token
+    // not related
     auto llama_token_newline = ::llama_tokenize(ctx, "\n", false);
 
+    // Show infos
     if (params.verbose_prompt) {
+
+        // print prompt content.
         fprintf(stderr, "\n");
         fprintf(stderr, "%s: prompt: '%s'\n", __func__, params.prompt.c_str());
         fprintf(stderr, "%s: number of tokens in prompt = %zu\n", __func__, embd_inp.size());
+        // print embedded input.
         for (int i = 0; i < (int) embd_inp.size(); i++) {
             fprintf(stderr, "%6d -> '%s'\n", embd_inp[i], llama_token_to_str(ctx, embd_inp[i]));
         }
 
+        // print guidance content.
         if (ctx_guidance) {
             fprintf(stderr, "\n");
             fprintf(stderr, "%s: negative prompt: '%s'\n", __func__, params.cfg_negative_prompt.c_str());
@@ -342,8 +347,9 @@ int main(int argc, char ** argv) {
             }
         }
 
+        // print memorized tokens.
         if (params.n_keep > 0) {
-        fprintf(stderr, "%s: static prompt based on n_keep: '", __func__);
+            fprintf(stderr, "%s: static prompt based on n_keep: '", __func__);
             for (int i = 0; i < params.n_keep; i++) {
                 fprintf(stderr, "%s", llama_token_to_str(ctx, embd_inp[i]));
             }
@@ -351,6 +357,8 @@ int main(int argc, char ** argv) {
         }
         fprintf(stderr, "\n");
     }
+
+    return 0;
 
     if (params.interactive) {
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))

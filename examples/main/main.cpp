@@ -358,38 +358,47 @@ int main(int argc, char ** argv) {
         fprintf(stderr, "\n");
     }
 
-    return 0;
-
+    // params.interactive is true.
     if (params.interactive) {
+        // If current system is Linux, macOS, etc.
 #if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+        // It trying to listen keypress or key combination in the terminal, and control the terminal.
+        // e.g. if we type ctrl+c in during we are chatting with the model, it exit chat with model.
         struct sigaction sigint_action;
         sigint_action.sa_handler = sigint_handler;
         sigemptyset (&sigint_action.sa_mask);
         sigint_action.sa_flags = 0;
         sigaction(SIGINT, &sigint_action, NULL);
+        // If current system is Windows.
 #elif defined (_WIN32)
+        // If we type ctrl+c, exit chat with model.
         auto console_ctrl_handler = +[](DWORD ctrl_type) -> BOOL {
             return (ctrl_type == CTRL_C_EVENT) ? (sigint_handler(SIGINT), true) : false;
         };
+        // Listen if ctrl is pressed or not.
         SetConsoleCtrlHandler(static_cast<PHANDLER_ROUTINE>(console_ctrl_handler), true);
 #endif
 
         fprintf(stderr, "%s: interactive mode on.\n", __func__);
 
+        // not sure what is antiprompt.
         if (params.antiprompt.size()) {
             for (auto antiprompt : params.antiprompt) {
                 fprintf(stderr, "Reverse prompt: '%s'\n", antiprompt.c_str());
             }
         }
 
+        // if input_prefix_bos
         if (params.input_prefix_bos) {
             fprintf(stderr, "Input prefix with BOS\n");
         }
 
+        // check prefix is empty.
         if (!params.input_prefix.empty()) {
             fprintf(stderr, "Input prefix: '%s'\n", params.input_prefix.c_str());
         }
 
+        // check suffix is empty.
         if (!params.input_suffix.empty()) {
             fprintf(stderr, "Input suffix: '%s'\n", params.input_suffix.c_str());
         }
@@ -398,6 +407,8 @@ int main(int argc, char ** argv) {
             params.repeat_last_n, params.repeat_penalty, params.presence_penalty, params.frequency_penalty, params.top_k, params.tfs_z, params.top_p, params.typical_p, params.temp, params.mirostat, params.mirostat_eta, params.mirostat_tau);
     fprintf(stderr, "generate: n_ctx = %d, n_batch = %d, n_predict = %d, n_keep = %d\n", n_ctx, params.n_batch, params.n_predict, params.n_keep);
     fprintf(stderr, "\n\n");
+
+    return 0;
 
     grammar_parser::parse_state parsed_grammar;
     llama_grammar *             grammar = NULL;

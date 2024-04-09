@@ -16,9 +16,13 @@
 #include <cstdint>
 #include <string>
 
+// A custom grammar parser
 namespace grammar_parser {
+    // This structure is designed to hold the state of a parsed grammar
     struct parse_state {
+        // A dictionary of symbol and its numerical identifiers.
         std::map<std::string, uint32_t>                 symbol_ids;
+
         std::vector<std::vector<llama_grammar_element>> rules;
 
         std::vector<const llama_grammar_element *> c_rules();

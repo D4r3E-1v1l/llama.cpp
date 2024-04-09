@@ -408,11 +408,11 @@ int main(int argc, char ** argv) {
     fprintf(stderr, "generate: n_ctx = %d, n_batch = %d, n_predict = %d, n_keep = %d\n", n_ctx, params.n_batch, params.n_predict, params.n_keep);
     fprintf(stderr, "\n\n");
 
-    return 0;
-
     grammar_parser::parse_state parsed_grammar;
     llama_grammar *             grammar = NULL;
+    // Maybe we can use custom grammar on llama.
     if (!params.grammar.empty()) {
+        // Parse grammar from params.
         parsed_grammar = grammar_parser::parse(params.grammar.c_str());
         // will be empty (default) if there are parse errors
         if (parsed_grammar.rules.empty()) {
@@ -432,8 +432,11 @@ int main(int argc, char ** argv) {
 
         std::vector<const llama_grammar_element *> grammar_rules(parsed_grammar.c_rules());
         grammar = llama_grammar_init(
-            grammar_rules.data(), grammar_rules.size(), parsed_grammar.symbol_ids.at("root"));
+            grammar_rules.data(), grammar_rules.size(), parsed_grammar.symbol_ids.at("root")
+        );
     }
+
+    return 0;
 
     // TODO: replace with ring-buffer
     std::vector<llama_token> last_n_tokens(n_ctx);

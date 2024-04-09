@@ -153,31 +153,40 @@ extern "C" {
     // grammar element type
     enum llama_gretype {
         // end of rule definition
+        // Meaning this is the end of the rule.
         LLAMA_GRETYPE_END            = 0,
 
         // start of alternate definition for rule
+        // The phrase "start of an alternate pattern within a rule" refers to how you can provide multiple options or
+        // variations within a single grammar rule.
+        // e.g. verb_phrase -> jumped | ran | walked
         LLAMA_GRETYPE_ALT            = 1,
 
         // non-terminal element: reference to rule
+        // Meaning non-terminal rule A is pointing to non-terminal rule B.
         LLAMA_GRETYPE_RULE_REF       = 2,
 
         // terminal element: character (code point)
+        // Represent a single char(terminal symbol).
         LLAMA_GRETYPE_CHAR           = 3,
 
         // inverse char(s) ([^a], [^a-b] [^abc])
+        // Represents chars that are not a char.
         LLAMA_GRETYPE_CHAR_NOT       = 4,
 
         // modifies a preceding LLAMA_GRETYPE_CHAR or LLAMA_GRETYPE_CHAR_ALT to
         // be an inclusive range ([a-z])
+        // Transform LLAMA_GRETYPE_CHAR or LLAMA_GRETYPE_CHAR_ALT to [a-z]
         LLAMA_GRETYPE_CHAR_RNG_UPPER = 5,
 
-        // modifies a preceding LLAMA_GRETYPE_CHAR or
-        // LLAMA_GRETYPE_CHAR_RNG_UPPER to add an alternate char to match ([ab], [a-zA])
+        // modifies a preceding LLAMA_GRETYPE_CHAR or LLAMA_GRETYPE_CHAR_RNG_UPPER to
+        // add an alternate char to match ([ab], [a-zA])
+        // For single char or character range, it adds an alternative rule. e.g. change rule A -> jump to rule A -> jump | run
         LLAMA_GRETYPE_CHAR_ALT       = 6,
     };
 
     typedef struct llama_grammar_element {
-        enum llama_gretype type;
+        enum llama_gretype type; // grammar element type
         uint32_t           value; // Unicode code point or rule ID
     } llama_grammar_element;
 

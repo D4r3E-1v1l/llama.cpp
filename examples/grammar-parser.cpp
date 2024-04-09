@@ -271,10 +271,13 @@ namespace grammar_parser {
         return parse_space(pos, true);
     }
 
+    // char * src: Text representation of the grammar you want to parse.
     parse_state parse(const char * src) {
         try {
             parse_state state;
+            // handles whitespace or other insignificant separators within the grammar text.
             const char * pos = parse_space(src, true);
+            // parse all the rules inside params.grammar.
             while (*pos) {
                 pos = parse_rule(state, pos);
             }

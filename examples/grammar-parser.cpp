@@ -73,6 +73,9 @@ namespace grammar_parser {
         return std::make_pair(value, pos);
     }
 
+    // const char * src: This is a pointer to the start of the text to be processed.
+    // bool newline_ok: A flag that determines whether newlines should be treated as insignificant characters or not.
+    // insignificant characters: ' '(space) or '\t'(tab) or '#' or '\r'(enter) or '\n'(new line)
     const char * parse_space(const char * src, bool newline_ok) {
         const char * pos = src;
         while (*pos == ' ' || *pos == '\t' || *pos == '#' ||
@@ -247,6 +250,7 @@ namespace grammar_parser {
         return pos;
     }
 
+    //
     const char * parse_rule(parse_state & state, const char * src) {
         const char * name_end = parse_name(src);
         const char * pos      = parse_space(name_end, false);
@@ -275,7 +279,7 @@ namespace grammar_parser {
     parse_state parse(const char * src) {
         try {
             parse_state state;
-            // handles whitespace or other insignificant separators within the grammar text.
+            // skip insignificant separators within the grammar text.
             const char * pos = parse_space(src, true);
             // parse all the rules inside params.grammar.
             while (*pos) {

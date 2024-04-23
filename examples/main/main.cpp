@@ -436,9 +436,8 @@ int main(int argc, char ** argv) {
         );
     }
 
-    return 0;
-
     // TODO: replace with ring-buffer
+    // Read history chat conversation from context.
     std::vector<llama_token> last_n_tokens(n_ctx);
     std::fill(last_n_tokens.begin(), last_n_tokens.end(), 0);
 
@@ -461,6 +460,7 @@ int main(int argc, char ** argv) {
         is_interacting = params.interactive_first;
     }
 
+    // Variable Definition(later)
     bool is_antiprompt        = false;
     bool input_echo           = true;
     bool need_to_save_session = !path_session.empty() && n_matching_session_tokens < embd_inp.size();
@@ -471,6 +471,7 @@ int main(int argc, char ** argv) {
     int n_session_consumed = 0;
     int n_past_guidance    = 0;
 
+    // This is not related to llama model.
     // the first thing we will do is to output the prompt, so set color accordingly
     console::set_display(console::prompt);
 
@@ -483,6 +484,8 @@ int main(int argc, char ** argv) {
         llama_eval(ctx, tmp.data(), tmp.size(), 0, params.n_threads);
         llama_reset_timings(ctx);
     }
+
+    return 0;
 
     while ((n_remain != 0 && !is_antiprompt) || params.interactive) {
         // predict

@@ -353,6 +353,7 @@ struct llama_context {
 
     std::mt19937 rng;
 
+    // Is the model has been evaluated before.
     bool has_evaluated_once = false;
 
     int64_t t_sample_us = 0;
@@ -1778,6 +1779,7 @@ static struct ggml_cgraph * llama_build_graph(
 //   - n_past:    the context size so far
 //   - n_threads: number of threads to use
 //
+// 这个function本身不产生任何output只是检查一下transformer, 可以生成ggml文件(这个又叫做cgraph)
 static bool llama_eval_internal(
          llama_context & lctx,
      const llama_token * tokens,
@@ -1789,8 +1791,10 @@ static bool llama_eval_internal(
 
     LLAMA_ASSERT((!tokens && embd) || (tokens && !embd));
 
+    // 记录一下model loading的开始时间, 用于计算model loading总共用了多少时间.
     const int64_t t_start_us = ggml_time_us();
 
+    // Support for metal GPU: M1/2 devices, e.g. macbook, ipad.
 #ifdef GGML_USE_MPI
     ggml_mpi_eval_init(lctx.ctx_mpi, &n_tokens, &n_past, &n_threads);
 #endif
@@ -4082,17 +4086,21 @@ bool llama_save_session_file(struct llama_context * ctx, const char * path_sessi
     return true;
 }
 
+// Run the llama model and calculate the loading time of llama model.
 int llama_eval(
-        struct llama_context * ctx,
-           const llama_token * tokens,
-                         int   n_tokens,
-                         int   n_past,
-                         int   n_threads) {
+    struct llama_context * ctx,
+    const llama_token * tokens,
+    int   n_tokens,
+    int   n_past,
+    int   n_threads
+) {
+    // Evaluate the llama model, if encounter error, print it in the console.
     if (!llama_eval_internal(*ctx, tokens, nullptr, n_tokens, n_past, n_threads, nullptr)) {
         fprintf(stderr, "%s: failed to eval\n", __func__);
         return 1;
     }
 
+    // This function calculate the model loading time.
     // get a more accurate load time, upon first eval
     // TODO: fix this
     if (!ctx->has_evaluated_once) {

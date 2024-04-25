@@ -483,11 +483,21 @@ int main(int argc, char ** argv) {
         // Mock an input with a beginning of string sign and empty content.
         const std::vector<llama_token> tmp = { llama_token_bos(), };
         llama_eval(ctx, tmp.data(), tmp.size(), 0, params.n_threads);
+        // 重置计时, 和怎么用model无关
         llama_reset_timings(ctx);
     }
 
+    printf("n_remain: %d\n", n_remain);
+    printf("is_antiprompt: %d\n", is_antiprompt);
+    printf("params.interactive: %d\n", params.interactive);
+    printf("out embd.size(): %ld\n", embd.size());
+    printf("----------------------------------------Before chat----------------------------------\n");
+
+    // Based on chat.sh settings, n_remain: 256, is_antiprompt: false, params.interactive: true
     while ((n_remain != 0 && !is_antiprompt) || params.interactive) {
         // predict
+
+        printf("embd.size(): %ld\n", embd.size());
         if (embd.size() > 0) {
             // Note: n_ctx - 4 here is to match the logic for commandline prompt handling via
             // --prompt or --file which uses the same value.
@@ -612,9 +622,21 @@ int main(int argc, char ** argv) {
             }
         }
 
+        // Delete all elements in embd and embd_guidance
         embd.clear();
         embd_guidance.clear();
 
+        printf("embd.size(): %ld\n", embd.size());
+        printf("is_interacting: %d\n", is_interacting);
+        printf("n_consumed: %d\n", n_consumed);
+        printf("(int) embd_inp.size() <= n_consumed && !is_interacting: %d\n", (int) embd_inp.size() <= n_consumed && !is_interacting);
+
+
+
+        // Loop 1:
+        // embd_inp.size(): 0
+        // is_interacting: false
+        // n_consumed: 0
         if ((int) embd_inp.size() <= n_consumed && !is_interacting) {
             // out of user input, sample next token
             const float   temp            = params.temp;
@@ -630,6 +652,20 @@ int main(int argc, char ** argv) {
             const float   mirostat_tau    = params.mirostat_tau;
             const float   mirostat_eta    = params.mirostat_eta;
             const bool    penalize_nl     = params.penalize_nl;
+
+            printf("temp: %f\n", temp);
+            printf("top_k: %d\n", top_k);
+            printf("top_p: %f\n", top_p);
+            printf("tfs_z: %f\n", tfs_z);
+            printf("typical_p: %f\n", typical_p);
+            printf("repeat_last_n: %d\n", repeat_last_n);
+            printf("repeat_penalty: %f\n", repeat_penalty);
+            printf("alpha_presence: %f\n", alpha_presence);
+            printf("alpha_frequency: %f\n", alpha_frequency);
+            printf("mirostat: %d\n", mirostat);
+            printf("mirostat_tau: %f\n", mirostat_tau);
+            printf("mirostat_eta: %f\n", mirostat_eta);
+            printf("penalize_nl: %d\n", penalize_nl);
 
             // optionally save the session on first sample (for faster prompt loading next time)
             if (!path_session.empty() && need_to_save_session && !params.prompt_cache_ro) {
@@ -719,8 +755,15 @@ int main(int argc, char ** argv) {
             // decrement remaining sampling budget
             --n_remain;
         } else {
+            printf("Go to else\n");
             // some user input remains from prompt or interaction, forward it to processing
+            printf("embd.size(): %ld\n", embd.size());
+            printf("n_consumed: %d\n", n_consumed);
+            printf("Before");
+
             while ((int) embd_inp.size() > n_consumed) {
+                printf("n_consumed: %d\n", n_consumed);
+
                 embd.push_back(embd_inp[n_consumed]);
                 last_n_tokens.erase(last_n_tokens.begin());
                 last_n_tokens.push_back(embd_inp[n_consumed]);

@@ -438,6 +438,8 @@ int main(int argc, char ** argv) {
 
     // TODO: replace with ring-buffer
     // Read history chat conversation from context.
+    // n_ctx通过chat.sh中-c设置
+    printf("n_ctx: %d\n", n_ctx);
     std::vector<llama_token> last_n_tokens(n_ctx);
     std::fill(last_n_tokens.begin(), last_n_tokens.end(), 0);
 
@@ -491,7 +493,7 @@ int main(int argc, char ** argv) {
     printf("is_antiprompt: %d\n", is_antiprompt);
     printf("params.interactive: %d\n", params.interactive);
     printf("out embd.size(): %ld\n", embd.size());
-    printf("----------------------------------------Before chat----------------------------------\n");
+    printf("----------------------------------------Start of chat----------------------------------\n");
 
     // Based on chat.sh settings, n_remain: 256, is_antiprompt: false, params.interactive: true
     while ((n_remain != 0 && !is_antiprompt) || params.interactive) {
@@ -629,14 +631,12 @@ int main(int argc, char ** argv) {
         printf("embd.size(): %ld\n", embd.size());
         printf("is_interacting: %d\n", is_interacting);
         printf("n_consumed: %d\n", n_consumed);
-        printf("(int) embd_inp.size() <= n_consumed && !is_interacting: %d\n", (int) embd_inp.size() <= n_consumed && !is_interacting);
-
-
 
         // Loop 1:
         // embd_inp.size(): 0
         // is_interacting: false
         // n_consumed: 0
+        printf("-------------if ((int) embd_inp.size() <= n_consumed && !is_interacting)--------------\n");
         if ((int) embd_inp.size() <= n_consumed && !is_interacting) {
             // out of user input, sample next token
             const float   temp            = params.temp;
@@ -758,16 +758,28 @@ int main(int argc, char ** argv) {
             printf("Go to else\n");
             // some user input remains from prompt or interaction, forward it to processing
             printf("embd.size(): %ld\n", embd.size());
+            printf("embd_inp.size(): %ld\n", embd_inp.size());
             printf("n_consumed: %d\n", n_consumed);
-            printf("Before");
 
+
+
+            // This while coping content in embd_input to embd and last_n_token and clear some elements
+            // in last_n_tokens.
+            printf("-------------while ((int) embd_inp.size() > n_consumed)--------------\n");
             while ((int) embd_inp.size() > n_consumed) {
                 printf("n_consumed: %d\n", n_consumed);
+                printf("last_n_tokens.size: %zu\n", last_n_tokens.size());
 
+                // This three lines are coping content in embd_input to embd and last_n_token. and clear some elements
+                // in last_n_tokens.
                 embd.push_back(embd_inp[n_consumed]);
                 last_n_tokens.erase(last_n_tokens.begin());
                 last_n_tokens.push_back(embd_inp[n_consumed]);
+
+                // n_consumed is an index of embd_input.
                 ++n_consumed;
+
+                // params.n_batch = 512, embd.size(): 0 -> 99
                 if ((int) embd.size() >= params.n_batch) {
                     break;
                 }
@@ -775,7 +787,18 @@ int main(int argc, char ** argv) {
         }
 
         // display text
+        // input_echo = true
         if (input_echo) {
+
+            // This for print out the following content (Following content is stored in embd_input):
+            //  Transcript of a dialog, where the User interacts with an Assistant named Bob. Bob is helpful, kind, honest, good at writing, and never fails to answer the User's requests immediately and with precision.
+            //
+            // User: Hello, Bob.
+            // Bob: Hello. How may I help you today?
+            // User: Please tell me the largest city in Europe.
+            // Bob: Sure. The largest city in Europe is Moscow, the capital of Russia.
+            // User:
+            // Need to learn llama_token_to_str.
             for (auto id : embd) {
                 printf("%s", llama_token_to_str(ctx, id));
             }

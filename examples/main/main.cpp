@@ -495,6 +495,9 @@ int main(int argc, char ** argv) {
     printf("out embd.size(): %ld\n", embd.size());
     printf("----------------------------------------Start of chat----------------------------------\n");
 
+    // Control the while loop only run certain times of loop.
+    int onlyRunNTimes = 1;
+
     // Based on chat.sh settings, n_remain: 256, is_antiprompt: false, params.interactive: true
     while ((n_remain != 0 && !is_antiprompt) || params.interactive) {
         // predict
@@ -755,21 +758,10 @@ int main(int argc, char ** argv) {
             // decrement remaining sampling budget
             --n_remain;
         } else {
-            printf("Go to else\n");
-            // some user input remains from prompt or interaction, forward it to processing
-            printf("embd.size(): %ld\n", embd.size());
-            printf("embd_inp.size(): %ld\n", embd_inp.size());
-            printf("n_consumed: %d\n", n_consumed);
-
-
-
             // This while coping content in embd_input to embd and last_n_token and clear some elements
             // in last_n_tokens.
             printf("-------------while ((int) embd_inp.size() > n_consumed)--------------\n");
             while ((int) embd_inp.size() > n_consumed) {
-                printf("n_consumed: %d\n", n_consumed);
-                printf("last_n_tokens.size: %zu\n", last_n_tokens.size());
-
                 // This three lines are coping content in embd_input to embd and last_n_token. and clear some elements
                 // in last_n_tokens.
                 embd.push_back(embd_inp[n_consumed]);
@@ -791,29 +783,45 @@ int main(int argc, char ** argv) {
         if (input_echo) {
 
             // This for print out the following content (Following content is stored in embd_input):
-            //  Transcript of a dialog, where the User interacts with an Assistant named Bob. Bob is helpful, kind, honest, good at writing, and never fails to answer the User's requests immediately and with precision.
-            //
-            // User: Hello, Bob.
-            // Bob: Hello. How may I help you today?
-            // User: Please tell me the largest city in Europe.
-            // Bob: Sure. The largest city in Europe is Moscow, the capital of Russia.
-            // User:
+            /*  Transcript of a dialog, where the User interacts with an Assistant named Bob. Bob is helpful, kind, honest, good at writing, and never fails to answer the User's requests immediately and with precision.
+
+             User: Hello, Bob.
+             Bob: Hello. How may I help you today?
+             User: Please tell me the largest city in Europe.
+             Bob: Sure. The largest city in Europe is Moscow, the capital of Russia.
+             User:*/
             // Need to learn llama_token_to_str.
             for (auto id : embd) {
                 printf("%s", llama_token_to_str(ctx, id));
             }
+            // printf write output to stdout and fflush(stdout) is actually printing the content in the console.
             fflush(stdout);
         }
+
+        printf("embd_input.size(): %zu\n", embd_inp.size());
+        printf("n_consumed: %d\n", n_consumed);
+        printf("------------------------------Start of if (input_echo && (int)embd_inp.size() == n_consumed)---------------------------\n");
+
+
         // reset color to default if we there is no pending user input
+        // input_echo: true, embd_input.size(): 99, n_consumed: 99
         if (input_echo && (int)embd_inp.size() == n_consumed) {
+            // Change console text color to white.
             console::set_display(console::reset);
         }
 
         // if not currently processing queued inputs;
         if ((int) embd_inp.size() <= n_consumed) {
 
+            printf("Go in if ((int) embd_inp.size() <= n_consumed)\n");
+            printf("params.antiprompt.size(): %zu\n", params.antiprompt.size());
+
             // check for reverse prompt
+            // Don't know what is a reverse prompt.
             if (params.antiprompt.size()) {
+
+                printf("Go in if (params.antiprompt.size())\n");
+                // Decode tokens in last_n_tokens to sentences. last_n_tokens should be empty.
                 std::string last_output;
                 for (auto id : last_n_tokens) {
                     last_output += llama_token_to_str(ctx, id);
@@ -941,6 +949,11 @@ int main(int argc, char ** argv) {
         if (params.interactive && n_remain <= 0 && params.n_predict != -1) {
             n_remain = params.n_predict;
             is_interacting = true;
+        }
+
+        onlyRunNTimes--;
+        if (onlyRunNTimes == 0) {
+            break;
         }
     }
 

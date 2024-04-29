@@ -828,28 +828,50 @@ int main(int argc, char ** argv) {
                 }
 
                 is_antiprompt = false;
+
+                printf("Print params.antiprompt\n");
+                for (const std::basic_string<char> &element : params.antiprompt) {
+                    std::cout << element << "|";
+                }
+                std::cout << std::endl;
+
                 // Check if each of the reverse prompts appears at the end of the output.
                 // If we're not running interactively, the reverse prompt might be tokenized with some following characters
                 // so we'll compensate for that by widening the search window a bit.
+                // In Loop 1, params.antiprompt only has one element which is "User:".
                 for (std::string & antiprompt : params.antiprompt) {
+                    // params.interactive: true
+                    // extra_padding: 0
                     size_t extra_padding = params.interactive ? 0 : 2;
+                    // 1. antiprompt.length() + extra_padding: add extra padding between each item in antiprompt.
+                    // 2. static_cast<size_t> perform a static data type cast from size type to size_t.
+                    // 3. last_output is a copy of last_n_tokens.
                     size_t search_start_pos = last_output.length() > static_cast<size_t>(antiprompt.length() + extra_padding)
                         ? last_output.length() - static_cast<size_t>(antiprompt.length() + extra_padding)
                         : 0;
 
+                    // find() find the first occurrence of a substring(antiprompt.c_str()) in with in a string(last_output)
+                    // starting from index(search_start_pos).
+                    // If we found substring antiprompt.c_str() in last_output, do something in if and break;
                     if (last_output.find(antiprompt.c_str(), search_start_pos) != std::string::npos) {
                         if (params.interactive) {
                             is_interacting = true;
+                            // Change text color to green and change text style to bold.
                             console::set_display(console::user_input);
                         }
                         is_antiprompt = true;
                         fflush(stdout);
+
+                        // if
                         break;
                     }
                 }
             }
 
             // deal with end of text token in interactive mode
+            // last_n_tokens.back(): last element in last_n_tokens.
+            // llama_token_eos(): 2
+            // last_n_tokens.back() == llama_token_eos(): false
             if (last_n_tokens.back() == llama_token_eos()) {
                 if (params.interactive) {
                     if (params.antiprompt.size() != 0) {
@@ -868,6 +890,8 @@ int main(int argc, char ** argv) {
                 }
             }
 
+            printf("n_past > 0 && is_interacting: %d\n", n_past > 0 && is_interacting);
+            // n_past > 0 && is_interacting: false
             if (n_past > 0 && is_interacting) {
                 if (params.instruct) {
                     printf("\n> ");

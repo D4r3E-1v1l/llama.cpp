@@ -191,8 +191,6 @@ int main(int argc, char ** argv) {
     std::string path_session = params.path_prompt_cache; // cache is empty.
     std::vector<llama_token> session_tokens;
 
-    printf("path_session: %d\n", path_session.empty());
-
     // path_session is empty, !path_session.empty() is false.
     if (!path_session.empty()) {
         fprintf(stderr, "%s: attempting to load saved session from '%s'\n", __func__, path_session.c_str());
@@ -489,20 +487,13 @@ int main(int argc, char ** argv) {
         llama_reset_timings(ctx);
     }
 
-    printf("n_remain: %d\n", n_remain);
-    printf("is_antiprompt: %d\n", is_antiprompt);
-    printf("params.interactive: %d\n", params.interactive);
-    printf("out embd.size(): %ld\n", embd.size());
-    printf("----------------------------------------Start of chat----------------------------------\n");
-
     // Control the while loop only run certain times of loop.
-    int onlyRunNTimes = 1;
+//    int onlyRunNTimes = 1;
 
     // Based on chat.sh settings, n_remain: 256, is_antiprompt: false, params.interactive: true
     while ((n_remain != 0 && !is_antiprompt) || params.interactive) {
         // predict
 
-        printf("embd.size(): %ld\n", embd.size());
         if (embd.size() > 0) {
             // Note: n_ctx - 4 here is to match the logic for commandline prompt handling via
             // --prompt or --file which uses the same value.
@@ -631,15 +622,10 @@ int main(int argc, char ** argv) {
         embd.clear();
         embd_guidance.clear();
 
-        printf("embd.size(): %ld\n", embd.size());
-        printf("is_interacting: %d\n", is_interacting);
-        printf("n_consumed: %d\n", n_consumed);
-
         // Loop 1:
         // embd_inp.size(): 0
         // is_interacting: false
         // n_consumed: 0
-        printf("-------------if ((int) embd_inp.size() <= n_consumed && !is_interacting)--------------\n");
         if ((int) embd_inp.size() <= n_consumed && !is_interacting) {
             // out of user input, sample next token
             const float   temp            = params.temp;
@@ -656,6 +642,8 @@ int main(int argc, char ** argv) {
             const float   mirostat_eta    = params.mirostat_eta;
             const bool    penalize_nl     = params.penalize_nl;
 
+
+            printf("------------------------------------------------------------------------------\n");
             printf("temp: %f\n", temp);
             printf("top_k: %d\n", top_k);
             printf("top_p: %f\n", top_p);
@@ -669,6 +657,7 @@ int main(int argc, char ** argv) {
             printf("mirostat_tau: %f\n", mirostat_tau);
             printf("mirostat_eta: %f\n", mirostat_eta);
             printf("penalize_nl: %d\n", penalize_nl);
+            printf("------------------------------------------------------------------------------\n");
 
             // optionally save the session on first sample (for faster prompt loading next time)
             if (!path_session.empty() && need_to_save_session && !params.prompt_cache_ro) {
@@ -760,7 +749,6 @@ int main(int argc, char ** argv) {
         } else {
             // This while coping content in embd_input to embd and last_n_token and clear some elements
             // in last_n_tokens.
-            printf("-------------while ((int) embd_inp.size() > n_consumed)--------------\n");
             while ((int) embd_inp.size() > n_consumed) {
                 // This three lines are coping content in embd_input to embd and last_n_token. and clear some elements
                 // in last_n_tokens.
@@ -798,11 +786,6 @@ int main(int argc, char ** argv) {
             fflush(stdout);
         }
 
-        printf("embd_input.size(): %zu\n", embd_inp.size());
-        printf("n_consumed: %d\n", n_consumed);
-        printf("------------------------------Start of if (input_echo && (int)embd_inp.size() == n_consumed)---------------------------\n");
-
-
         // reset color to default if we there is no pending user input
         // input_echo: true, embd_input.size(): 99, n_consumed: 99
         if (input_echo && (int)embd_inp.size() == n_consumed) {
@@ -812,15 +795,10 @@ int main(int argc, char ** argv) {
 
         // if not currently processing queued inputs;
         if ((int) embd_inp.size() <= n_consumed) {
-
-            printf("Go in if ((int) embd_inp.size() <= n_consumed)\n");
-            printf("params.antiprompt.size(): %zu\n", params.antiprompt.size());
-
             // check for reverse prompt
             // Don't know what is a reverse prompt.
             if (params.antiprompt.size()) {
 
-                printf("Go in if (params.antiprompt.size())\n");
                 // Decode tokens in last_n_tokens to sentences. last_n_tokens should be empty.
                 std::string last_output;
                 for (auto id : last_n_tokens) {
@@ -828,12 +806,6 @@ int main(int argc, char ** argv) {
                 }
 
                 is_antiprompt = false;
-
-                printf("Print params.antiprompt\n");
-                for (const std::basic_string<char> &element : params.antiprompt) {
-                    std::cout << element << "|";
-                }
-                std::cout << std::endl;
 
                 // Check if each of the reverse prompts appears at the end of the output.
                 // If we're not running interactively, the reverse prompt might be tokenized with some following characters
@@ -890,7 +862,6 @@ int main(int argc, char ** argv) {
                 }
             }
 
-            printf("n_past > 0 && is_interacting: %d\n", n_past > 0 && is_interacting);
             // n_past > 0 && is_interacting: false
             if (n_past > 0 && is_interacting) {
                 if (params.instruct) {
@@ -913,6 +884,8 @@ int main(int argc, char ** argv) {
                     another_line = console::readline(line, params.multiline_input);
                     buffer += line;
                 } while (another_line);
+
+                printf("User Input: %s", line.c_str());
 
                 // done taking input, reset color
                 console::set_display(console::reset);
@@ -975,10 +948,10 @@ int main(int argc, char ** argv) {
             is_interacting = true;
         }
 
-        onlyRunNTimes--;
+        /*onlyRunNTimes--;
         if (onlyRunNTimes == 0) {
             break;
-        }
+        }*/
     }
 
     if (!path_session.empty() && params.prompt_cache_all && !params.prompt_cache_ro) {
